@@ -404,11 +404,11 @@ def general_sim(selected_platform):
     platform = Platform(
         selected_platform,
         job_directory=manifest.job_directory,
-        partition="short",
-        time="2:00:00",
-        account="p30781",
+        partition="b1139",
+        time="4:00:00",
+        account="b1139",
         modules=["singularity"],
-        max_running_jobs=1500,
+        max_running_jobs=100,
     )
 
     # create experiment from builder

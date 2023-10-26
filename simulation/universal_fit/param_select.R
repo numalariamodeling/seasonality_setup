@@ -20,7 +20,7 @@ load_case_data <- function(projectdir) {
 # Global variables and prior distributions
 batch <- "batch_1"
 start_year = 1960
-rnd <- 1
+rnd <- 2
 DS <- "BK"
 params_name <- c(
   "Temperature_Shift",
@@ -64,10 +64,10 @@ if (rnd == 0) {
     data.table::fread()
   # Normalize over 5 routine case data by annual sum as reference data
   rcases <- load_case_data("/projects/b1139/malaria-bf-hbhi/IO") |>
-    filter(DS_Name == DS) %>%
+    filter(DS_Name == "Sapone") %>%
     filter(age == 'ov5')
   rcases1 <- rcases |>
-    filter(DS_Name == DS) |>
+    filter(DS_Name == "Sapone") |>
     group_by(year) |>
     mutate(norm_repincd = repincd/sum(repincd)) |>
     group_by(month) |>
@@ -376,9 +376,9 @@ if (rnd == 0) {
   
   pp %>% pivot_wider(values_from = value,names_from = variable) -> pp
   
-  pp <- rbind(pp,perf %>% select(-X))
+  perf <- rbind(pp,perf %>% select(-c(X,X.1)))
   
-  pp1 <- pp %>% ggplot(aes(x=round)) +
+  pp1 <- perf %>% ggplot(aes(x=round)) +
     geom_point(aes(y=ifelse(parameter=="Temperature_Shift",mean,mean))) +
     geom_line(aes(y=ifelse(parameter=="Temperature_Shift",mean,mean))) +
     geom_segment(aes(xend=round, 
@@ -389,7 +389,7 @@ if (rnd == 0) {
     theme(strip.text=element_text(size=12))+
     ylab("Mean ± Marginal SD") + xlab("Fitting Round")
   
-  pp2 <- pp %>% ggplot(aes(x=round)) +
+  pp2 <- perf %>% ggplot(aes(x=round)) +
     geom_point(aes(y=ifelse(parameter=="Temperature_Shift",mean,10^mean))) +
     geom_line(aes(y=ifelse(parameter=="Temperature_Shift",mean,10^mean))) +
     geom_segment(aes(xend=round, 
@@ -405,11 +405,6 @@ if (rnd == 0) {
   ggsave(glue("simulation_output/{DS}/{batch}/performance_plot.png"), width=8,height=4)
   ggsave(glue("simulation_output/{DS}/{batch}/performance_plot.pdf"), width=8,height=4)
   
-  
-  
-  
-  
-  write.csv(x = pp, glue("simulation_output/{DS}/{batch}/performance.csv"))
   
   
   eir1 <- ic %>% filter(Sample_ID %in% score_sel[1:nsel]) %>%
@@ -505,7 +500,7 @@ if (rnd == 0) {
 # Output
 outdir <- file.path(iodir, glue("simulation_output/{DS}/{batch}"))
 if (!dir.exists(outdir)) dir.create(outdir, recursive = T)
-write.csv(x = perf, file.path(outdir,"performance.csv"))
+write.csv(x = perf, glue("simulation_output/{DS}/{batch}/performance.csv"))
 fname <- glue("rnd{rnd}.csv")
 data.table::fwrite(df, file.path(outdir, fname))
 print(paste0(fname, ' saved under ', outdir))
